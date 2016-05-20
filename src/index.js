@@ -43,7 +43,7 @@ var Sticky = UI.extend({
         var the = this;
 
         the[_options] = object.assign(true, {}, defaults, options);
-        the.Super(options);
+        Sticky.parent(the, options);
         the[_initNode]();
         the[_firstUpdate] = true;
         the.update();
@@ -83,7 +83,7 @@ var Sticky = UI.extend({
 
         modification.remove(the[_placeholderEl]);
         the[_scrollable].destroy();
-        the.Super.destroy();
+        Sticky.parent.destroy(the);
     }
 });
 var pro = Sticky.prototype;
