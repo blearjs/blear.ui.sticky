@@ -154,7 +154,8 @@ pro[_initEvent] = function () {
                     top: '',
                     width: '',
                     height: '',
-                    left: ''
+                    left: '',
+                    zIndex: ''
                 };
 
                 if (layout.positioned(the[_stickyEl])) {
@@ -178,7 +179,8 @@ pro[_initEvent] = function () {
                     top: the[_containerElementClientTop],
                     left: the[_stickyElementOffsetLeft],
                     width: the[_stickyElementOuterWidth],
-                    height: the[_stickyElementOuterHeight]
+                    height: the[_stickyElementOuterHeight],
+                    zIndex: 1
                 };
 
                 attribute.style(the[_placeholderEl], {
