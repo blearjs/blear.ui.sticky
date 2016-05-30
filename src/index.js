@@ -7,13 +7,13 @@
 
 'use strict';
 
-var Scrollable =   require('blear.classes.scrollable');
-var layout =       require('blear.core.layout');
-var attribute =    require('blear.core.attribute');
+var Scrollable = require('blear.classes.scrollable');
+var layout = require('blear.core.layout');
+var attribute = require('blear.core.attribute');
 var modification = require('blear.core.modification');
-var selector =     require('blear.core.selector');
-var object =       require('blear.utils.object');
-var UI =           require('blear.ui');
+var selector = require('blear.core.selector');
+var object = require('blear.utils.object');
+var UI = require('blear.ui');
 
 
 var namespace = UI.UI_CLASS + '-sticky';
@@ -141,7 +141,7 @@ pro[_initEvent] = function () {
 
     the[_lastState] = -1;
 
-    the[_scrollable].on('scroll', function () {
+    the[_scrollable].on('scroll', the[_onScrollSticky] = function () {
         var scrollTop = layout.scrollTop(the[_containerEl]);
         var state;
         var pos;
