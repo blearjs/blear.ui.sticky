@@ -57,8 +57,12 @@ var Sticky = UI.extend({
      */
     update: function () {
         var the = this;
+        var position = attribute.style(the[_stickyEl], 'position');
 
-        the[_stickyElementPosition] = attribute.style(the[_stickyEl], 'position');
+        if (position !== the[_stickyElementPosition]) {
+            the[_restorePostion]();
+        }
+
         the[_stickyElementOffsetLeft] = layout.offsetLeft(the[_stickyEl]);
         the[_containerElementClientTop] = layout.offsetTop(the[_containerEl]);
         the[_stickyElementOffsetTop] = layout.offsetTop(the[_stickyEl]) - the[_containerElementClientTop];
@@ -66,6 +70,8 @@ var Sticky = UI.extend({
         the[_stickyElementOuterHeight] = layout.outerHeight(the[_stickyEl]);
 
         if (the[_firstUpdate]) {
+            the[_stickyElementPosition] = position;
+            the[_stickyElementPositioned] = layout.positioned(the[_stickyEl]);
             the[_firstUpdate] = false;
             return the;
         }
@@ -95,7 +101,9 @@ var _placeholderEl = Sticky.sole();
 var _firstUpdate = Sticky.sole();
 var _initNode = Sticky.sole();
 var _initEvent = Sticky.sole();
+var _restorePostion = Sticky.sole();
 var _containerElementClientTop = Sticky.sole();
+var _stickyElementPositioned = Sticky.sole();
 var _stickyElementPosition = Sticky.sole();
 var _stickyElementOffsetLeft = Sticky.sole();
 var _stickyElementOffsetTop = Sticky.sole();
@@ -128,6 +136,33 @@ pro[_initNode] = function () {
 
 
 /**
+ * 重置位置
+ */
+pro[_restorePostion] = function () {
+    var the = this;
+    var pos = {
+        top: '',
+        width: '',
+        height: '',
+        left: '',
+        zIndex: ''
+    };
+
+    if (the[_stickyElementPositioned]) {
+        pos.position = the[_stickyElementPosition];
+    } else {
+        pos.position = the[_stickyElementPosition] = 'relative';
+    }
+
+    attribute.style(the[_placeholderEl], {
+        width: 0,
+        height: 0
+    });
+    attribute.style(the[_stickyEl], pos);
+};
+
+
+/**
  * 初始化事件
  */
 pro[_initEvent] = function () {
@@ -150,25 +185,7 @@ pro[_initEvent] = function () {
             state = STATE_POSITIONED;
 
             if (state !== the[_lastState]) {
-                pos = {
-                    top: '',
-                    width: '',
-                    height: '',
-                    left: '',
-                    zIndex: ''
-                };
-
-                if (layout.positioned(the[_stickyEl])) {
-                    pos.position = the[_stickyElementPosition];
-                } else {
-                    pos.position = the[_stickyElementPosition] = 'relative';
-                }
-
-                attribute.style(the[_placeholderEl], {
-                    width: 0,
-                    height: 0
-                });
-                attribute.style(the[_stickyEl], pos);
+                the[_restorePostion]();
             }
         } else {
             state = STATE_FIXED;
