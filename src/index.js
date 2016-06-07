@@ -149,8 +149,7 @@ pro[_restorePostion] = function () {
         top: '',
         width: '',
         height: '',
-        left: '',
-        zIndex: ''
+        left: ''
     };
 
     if (the[_stickyElementPositioned]) {
@@ -201,8 +200,7 @@ pro[_initEvent] = function () {
                     top: the[_containerElementClientTop],
                     left: the[_stickyElementOffsetLeft],
                     width: the[_stickyElementOuterWidth],
-                    height: the[_stickyElementOuterHeight],
-                    zIndex: 1
+                    height: the[_stickyElementOuterHeight]
                 };
 
                 attribute.style(the[_placeholderEl], {
