@@ -57,6 +57,11 @@ var Sticky = UI.extend({
      */
     update: function () {
         var the = this;
+
+        if(the[_lastState] === STATE_FIXED) {
+            return the;
+        }
+
         var position = attribute.style(the[_stickyEl], 'position');
 
         if (position !== the[_stickyElementPosition]) {
