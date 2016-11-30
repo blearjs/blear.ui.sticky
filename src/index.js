@@ -94,7 +94,7 @@ var Sticky = UI.extend({
 
         modification.remove(the[_placeholderEl]);
         the[_scrollable].destroy();
-        Sticky.parent.destroy(the);
+        Sticky.invoke('destroy', the);
     }
 });
 var pro = Sticky.prototype;
