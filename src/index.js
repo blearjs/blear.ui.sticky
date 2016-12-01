@@ -13,9 +13,10 @@ var attribute = require('blear.core.attribute');
 var modification = require('blear.core.modification');
 var selector = require('blear.core.selector');
 var object = require('blear.utils.object');
+var compatible = require('blear.utils.compatible');
 var UI = require('blear.ui');
 
-
+var supportSticky = compatible.css('position', 'sticky').key !== '';
 var namespace = UI.UI_CLASS + '-sticky';
 var gid = 0;
 var defaults = {
@@ -23,19 +24,19 @@ var defaults = {
      * 粘滞的元素
      * @type String|HTMLElement
      */
-    stickyEl: '',
+    el: '',
 
     /**
-     * 内容容器
-     * @type String|HTMLElement
+     * 上位移
+     * @type Number
      */
-    containerEl: '',
+    top: 0,
 
     /**
-     * 滚动的元素
-     * @type String|HTMLElement
+     * 左位移
+     * @type Number
      */
-    scrollerEl: ''
+    left: 0
 };
 var Sticky = UI.extend({
     className: 'Sticky',
@@ -45,9 +46,12 @@ var Sticky = UI.extend({
         the[_options] = object.assign(true, {}, defaults, options);
         Sticky.parent(the, options);
         the[_initNode]();
-        the[_firstUpdate] = true;
-        the.update();
-        the[_initEvent]();
+
+        if (!supportSticky) {
+            the[_firstUpdate] = true;
+            the.update();
+            the[_initEvent]();
+        }
     },
 
 
@@ -58,30 +62,32 @@ var Sticky = UI.extend({
     update: function () {
         var the = this;
 
-        if(the[_lastState] === STATE_FIXED) {
+        if (the[_lastState] === STATE_FIXED) {
             return the;
         }
 
         var position = attribute.style(the[_stickyEl], 'position');
 
-        if (position !== the[_stickyElementPosition]) {
+        if (position !== the[_stickyPosition]) {
             the[_restorePostion]();
         }
 
-        the[_stickyElementOffsetLeft] = layout.offsetLeft(the[_stickyEl]);
-        the[_containerElementClientTop] = layout.offsetTop(the[_containerEl]);
-        the[_stickyElementOffsetTop] = layout.offsetTop(the[_stickyEl]) - the[_containerElementClientTop];
-        the[_stickyElementOuterWidth] = layout.outerWidth(the[_stickyEl]);
-        the[_stickyElementOuterHeight] = layout.outerHeight(the[_stickyEl]);
+        the[_stickyOuterWidth] = layout.outerWidth(the[_stickyEl]);
+        the[_stickyOuterHeight] = layout.outerHeight(the[_stickyEl]);
+        the[_stickyOffsetTop] = layout.offsetTop(the[_stickyEl]);
+        the[_stickyMaxOffsetTop] = layout.offsetTop(the[_parentEl])
+            + layout.height(the[_parentEl])
+            - the[_stickyOuterHeight];
+
+        layout.outerWidth(the[_stickyEl], the[_stickyOuterWidth]);
+        layout.outerHeight(the[_stickyEl], the[_stickyOuterHeight]);
 
         if (the[_firstUpdate]) {
-            the[_stickyElementPosition] = position;
-            the[_stickyElementPositioned] = layout.positioned(the[_stickyEl]);
+            the[_stickyPosition] = position;
             the[_firstUpdate] = false;
             return the;
         }
 
-        the[_onScrollSticky]();
         return the;
     },
 
@@ -92,33 +98,33 @@ var Sticky = UI.extend({
     destroy: function () {
         var the = this;
 
-        modification.remove(the[_placeholderEl]);
-        the[_scrollable].destroy();
+        if (!supportSticky) {
+            modification.remove(the[_placeholderEl]);
+            the[_scrollable].destroy();
+        }
+
         Sticky.invoke('destroy', the);
     }
 });
 var pro = Sticky.prototype;
 var _options = Sticky.sole();
-var _containerEl = Sticky.sole();
-var _scrollerEl = Sticky.sole();
+var _parentEl = Sticky.sole();
 var _stickyEl = Sticky.sole();
 var _placeholderEl = Sticky.sole();
 var _firstUpdate = Sticky.sole();
 var _initNode = Sticky.sole();
 var _initEvent = Sticky.sole();
 var _restorePostion = Sticky.sole();
-var _containerElementClientTop = Sticky.sole();
-var _stickyElementPositioned = Sticky.sole();
-var _stickyElementPosition = Sticky.sole();
-var _stickyElementOffsetLeft = Sticky.sole();
-var _stickyElementOffsetTop = Sticky.sole();
-var _stickyElementOuterWidth = Sticky.sole();
-var _stickyElementOuterHeight = Sticky.sole();
+var _stickyPosition = Sticky.sole();
+var _stickyOffsetTop = Sticky.sole();
+var _stickyMaxOffsetTop = Sticky.sole();
+var _stickyOuterWidth = Sticky.sole();
+var _stickyOuterHeight = Sticky.sole();
 var _lastState = Sticky.sole();
 var _scrollable = Sticky.sole();
 var _onScrollSticky = Sticky.sole();
 var STATE_FIXED = 0;
-var STATE_POSITIONED = 1;
+var STATE_RELATIVED = 1;
 
 
 /**
@@ -126,17 +132,28 @@ var STATE_POSITIONED = 1;
  */
 pro[_initNode] = function () {
     var the = this;
+    var options = the[_options];
 
-    the[_containerEl] = selector.query(the[_options].containerEl)[0];
-    the[_scrollerEl] = selector.query(the[_options].scrollerEl)[0];
-    the[_stickyEl] = selector.query(the[_options].stickyEl)[0];
-    the[_placeholderEl] = modification.create('div', {
-        style: {
-            position: 'relative'
-        },
-        id: namespace + '-' + (gid++)
-    });
-    modification.insert(the[_placeholderEl], the[_stickyEl], 'afterend');
+    the[_stickyEl] = selector.query(the[_options].el)[0];
+
+    if (supportSticky) {
+        attribute.style(the[_stickyEl], {
+            position: 'sticky',
+            top: options.top,
+            left: options.left,
+            zIndex: UI.zIndex()
+        });
+    } else {
+        the[_parentEl] = selector.parent(the[_stickyEl])[0];
+        the[_placeholderEl] = modification.create('div', {
+            style: {
+                position: 'relative'
+            },
+            id: namespace + '-' + (gid++)
+        });
+        attribute.style(the[_stickyEl], 'position', 'relative');
+        modification.insert(the[_placeholderEl], the[_stickyEl], 3);
+    }
 };
 
 
@@ -145,24 +162,15 @@ pro[_initNode] = function () {
  */
 pro[_restorePostion] = function () {
     var the = this;
-    var pos = {
-        top: '',
-        width: '',
-        height: '',
-        left: ''
-    };
-
-    if (the[_stickyElementPositioned]) {
-        pos.position = the[_stickyElementPosition];
-    } else {
-        pos.position = the[_stickyElementPosition] = 'relative';
-    }
 
     attribute.style(the[_placeholderEl], {
         width: 0,
         height: 0
     });
-    attribute.style(the[_stickyEl], pos);
+    attribute.style(the[_stickyEl], {
+        position: 'relative',
+        zIndex: ''
+    });
 };
 
 
@@ -174,19 +182,17 @@ pro[_initEvent] = function () {
     var options = the[_options];
 
     the[_scrollable] = new Scrollable({
-        scrollerEl: the[_scrollerEl],
-        containerEl: the[_containerEl]
+        offsetX: options.left,
+        offsetY: options.top
     });
-
     the[_lastState] = -1;
-
-    the[_scrollable].on('scroll', the[_onScrollSticky] = function () {
-        var scrollTop = layout.scrollTop(the[_containerEl]);
+    the[_scrollable].on('scroll', the[_onScrollSticky] = function (meta) {
+        var scrollTop = meta.scrollTop;
         var state;
         var pos;
 
-        if (scrollTop < the[_stickyElementOffsetTop]) {
-            state = STATE_POSITIONED;
+        if (scrollTop < the[_stickyOffsetTop] || scrollTop > the[_stickyMaxOffsetTop]) {
+            state = STATE_RELATIVED;
 
             if (state !== the[_lastState]) {
                 the[_restorePostion]();
@@ -197,15 +203,13 @@ pro[_initEvent] = function () {
             if (state !== the[_lastState]) {
                 pos = {
                     position: 'fixed',
-                    top: the[_containerElementClientTop],
-                    left: the[_stickyElementOffsetLeft],
-                    width: the[_stickyElementOuterWidth],
-                    height: the[_stickyElementOuterHeight]
+                    top: options.top,
+                    zIndex: UI.zIndex()
                 };
 
                 attribute.style(the[_placeholderEl], {
-                    width: the[_stickyElementOuterWidth],
-                    height: the[_stickyElementOuterHeight]
+                    width: the[_stickyOuterWidth],
+                    height: the[_stickyOuterHeight]
                 });
                 attribute.style(the[_stickyEl], pos);
             }
