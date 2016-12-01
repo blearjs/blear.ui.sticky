@@ -16,8 +16,11 @@ var object = require('blear.utils.object');
 var compatible = require('blear.utils.compatible');
 var UI = require('blear.ui');
 
-var supportSticky = compatible.css('position', 'sticky').key !== '';
-var namespace = UI.UI_CLASS + '-sticky';
+var STR_POSITION = 'position';
+var STR_STICKY = 'sticky';
+var STR_RELATIVE = 'relative';
+var supportSticky = compatible.css(STR_POSITION, STR_STICKY).key !== '';
+var namespace = UI.UI_CLASS + '-' + STR_STICKY;
 var gid = 0;
 var defaults = {
     /**
@@ -66,7 +69,7 @@ var Sticky = UI.extend({
             return the;
         }
 
-        var position = attribute.style(the[_stickyEl], 'position');
+        var position = attribute.style(the[_stickyEl], STR_POSITION);
 
         if (position !== the[_stickyPosition]) {
             the[_restorePostion]();
@@ -138,7 +141,7 @@ pro[_initNode] = function () {
 
     if (supportSticky) {
         attribute.style(the[_stickyEl], {
-            position: 'sticky',
+            position: STR_STICKY,
             top: options.top,
             left: options.left,
             zIndex: UI.zIndex()
@@ -147,11 +150,11 @@ pro[_initNode] = function () {
         the[_parentEl] = selector.parent(the[_stickyEl])[0];
         the[_placeholderEl] = modification.create('div', {
             style: {
-                position: 'relative'
+                position: STR_RELATIVE
             },
             id: namespace + '-' + (gid++)
         });
-        attribute.style(the[_stickyEl], 'position', 'relative');
+        attribute.style(the[_stickyEl], STR_POSITION, STR_RELATIVE);
         modification.insert(the[_placeholderEl], the[_stickyEl], 3);
     }
 };
@@ -168,7 +171,7 @@ pro[_restorePostion] = function () {
         height: 0
     });
     attribute.style(the[_stickyEl], {
-        position: 'relative',
+        position: STR_RELATIVE,
         zIndex: ''
     });
 };
