@@ -30,6 +30,12 @@ var defaults = {
     el: '',
 
     /**
+     * 容器元素
+     * @type String|HTMLElement
+     */
+    containerEl: document,
+
+    /**
      * 上位移
      * @type Number
      */
@@ -185,6 +191,7 @@ pro[_initEvent] = function () {
     var options = the[_options];
 
     the[_scrollable] = new Scrollable({
+        el: options.containerEl,
         offsetX: options.left,
         offsetY: options.top
     });
