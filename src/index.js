@@ -71,7 +71,7 @@ var Sticky = UI.extend({
     update: function () {
         var the = this;
 
-        if (the[_lastState] === STATE_FIXED) {
+        if (the[_lastState] === STATE_FIXED || supportSticky) {
             return the;
         }
 
