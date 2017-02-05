@@ -45,7 +45,13 @@ var defaults = {
      * 左位移
      * @type Number
      */
-    left: 0
+    left: 0,
+
+    /**
+     * 层级
+     * @type Number
+     */
+    zIndex: 9
 };
 var Sticky = UI.extend({
     className: 'Sticky',
@@ -150,7 +156,7 @@ pro[_initNode] = function () {
             position: STR_STICKY,
             top: options.top,
             left: options.left,
-            zIndex: UI.zIndex()
+            zIndex: options.zIndex
         });
     } else {
         the[_parentEl] = selector.parent(the[_stickyEl])[0];
@@ -214,7 +220,7 @@ pro[_initEvent] = function () {
                 pos = {
                     position: 'fixed',
                     top: options.top,
-                    zIndex: UI.zIndex()
+                    zIndex: options.zIndex
                 };
 
                 attribute.style(the[_placeholderEl], {
