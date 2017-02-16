@@ -132,8 +132,7 @@ pro[_initNode] = function () {
             style: {
                 position: STR_RELATIVE,
                 width: the[_stickyOuterWidth] = layout.outerWidth(the[_stickyEl]),
-                height: the[_stickyOuterHeight] =  layout.outerHeight(the[_stickyEl]),
-                display: 'none'
+                height: 0
             },
             id: namespace + '-' + (gid++)
         });
@@ -150,7 +149,6 @@ pro[_restorePostion] = function () {
     var the = this;
 
     attribute.style(the[_placeholderEl], {
-        width: 0,
         height: 0
     });
     attribute.style(the[_stickyEl], {
@@ -190,7 +188,7 @@ pro[_initEvent] = function () {
             state = STATE_FIXED;
 
             if (state !== the[_lastState]) {
-                attribute.show(the[_placeholderEl]);
+                attribute.style(the[_placeholderEl], 'height', 'auto');
                 pos = {
                     position: 'fixed',
                     top: options.top,
