@@ -2,6 +2,7 @@
  * 粘滞
  * @author ydr.me
  * @create 2016-05-12 18:33
+ * @update 2017年02月16日14:07:36
  */
 
 
@@ -22,6 +23,10 @@ var STR_RELATIVE = 'relative';
 var supportSticky = compatible.css(STR_POSITION, STR_STICKY).key !== '';
 var namespace = UI.UI_CLASS + '-' + STR_STICKY;
 var gid = 0;
+var win = window;
+var doc = document;
+var htmlEl = doc.documentElement;
+var bodyEl = doc.body;
 var defaults = {
     /**
      * 粘滞的元素
@@ -63,49 +68,13 @@ var Sticky = UI.extend({
         the[_initNode]();
 
         if (!supportSticky) {
-            the[_firstUpdate] = true;
-            the.update();
             the[_initEvent]();
         }
     },
 
-
-    /**
-     * 更新粘滞位置，当内容区发生位置变化需要重新执行一次
-     * @returns {Sticky}
-     */
     update: function () {
-        var the = this;
-
-        if (the[_lastState] === STATE_FIXED || supportSticky) {
-            return the;
-        }
-
-        var position = attribute.style(the[_stickyEl], STR_POSITION);
-
-        if (position !== the[_stickyPosition]) {
-            the[_restorePostion]();
-        }
-
-        the[_stickyOuterWidth] = layout.outerWidth(the[_stickyEl]);
-        the[_stickyOuterHeight] = layout.outerHeight(the[_stickyEl]);
-        the[_stickyOffsetTop] = layout.offsetTop(the[_stickyEl]);
-        the[_stickyMaxOffsetTop] = layout.offsetTop(the[_parentEl])
-            + layout.height(the[_parentEl])
-            - the[_stickyOuterHeight];
-
-        layout.outerWidth(the[_stickyEl], the[_stickyOuterWidth]);
-        layout.outerHeight(the[_stickyEl], the[_stickyOuterHeight]);
-
-        if (the[_firstUpdate]) {
-            the[_stickyPosition] = position;
-            the[_firstUpdate] = false;
-            return the;
-        }
-
-        return the;
+        // 保留方法
     },
-
 
     /**
      * 销毁实例
@@ -122,22 +91,20 @@ var Sticky = UI.extend({
     }
 });
 var pro = Sticky.prototype;
-var _options = Sticky.sole();
-var _parentEl = Sticky.sole();
-var _stickyEl = Sticky.sole();
-var _placeholderEl = Sticky.sole();
-var _firstUpdate = Sticky.sole();
-var _initNode = Sticky.sole();
-var _initEvent = Sticky.sole();
-var _restorePostion = Sticky.sole();
-var _stickyPosition = Sticky.sole();
-var _stickyOffsetTop = Sticky.sole();
-var _stickyMaxOffsetTop = Sticky.sole();
-var _stickyOuterWidth = Sticky.sole();
-var _stickyOuterHeight = Sticky.sole();
-var _lastState = Sticky.sole();
-var _scrollable = Sticky.sole();
-var _onScrollSticky = Sticky.sole();
+var sole = Sticky.sole;
+var _options = sole();
+var _parentEl = sole();
+var _containerEl = sole();
+var _stickyEl = sole();
+var _placeholderEl = sole();
+var _initNode = sole();
+var _initEvent = sole();
+var _restorePostion = sole();
+var _stickyOuterWidth = sole();
+var _stickyOuterHeight = sole();
+var _lastState = sole();
+var _scrollable = sole();
+var _onScrollSticky = sole();
 var STATE_FIXED = 0;
 var STATE_RELATIVED = 1;
 
@@ -149,6 +116,7 @@ pro[_initNode] = function () {
     var the = this;
     var options = the[_options];
 
+    the[_containerEl] = selector.query(the[_options].containerEl)[0];
     the[_stickyEl] = selector.query(the[_options].el)[0];
 
     if (supportSticky) {
@@ -162,7 +130,10 @@ pro[_initNode] = function () {
         the[_parentEl] = selector.parent(the[_stickyEl])[0];
         the[_placeholderEl] = modification.create('div', {
             style: {
-                position: STR_RELATIVE
+                position: STR_RELATIVE,
+                width: the[_stickyOuterWidth] = layout.outerWidth(the[_stickyEl]),
+                height: the[_stickyOuterHeight] =  layout.outerHeight(the[_stickyEl]),
+                display: 'none'
             },
             id: namespace + '-' + (gid++)
         });
@@ -197,7 +168,7 @@ pro[_initEvent] = function () {
     var options = the[_options];
 
     the[_scrollable] = new Scrollable({
-        el: options.containerEl,
+        el: the[_containerEl],
         offsetX: options.left,
         offsetY: options.top
     });
@@ -206,8 +177,10 @@ pro[_initEvent] = function () {
         var scrollTop = meta.scrollTop;
         var state;
         var pos;
+        var min = layout.offsetTop(the[_placeholderEl]) + getContainerScrollTop(the[_containerEl]);
+        var max = min + layout.outerHeight(the[_parentEl]);
 
-        if (scrollTop < the[_stickyOffsetTop] || scrollTop > the[_stickyMaxOffsetTop]) {
+        if (scrollTop < min || scrollTop > max) {
             state = STATE_RELATIVED;
 
             if (state !== the[_lastState]) {
@@ -217,16 +190,14 @@ pro[_initEvent] = function () {
             state = STATE_FIXED;
 
             if (state !== the[_lastState]) {
+                attribute.show(the[_placeholderEl]);
                 pos = {
                     position: 'fixed',
                     top: options.top,
-                    zIndex: options.zIndex
+                    zIndex: options.zIndex,
+                    width: the[_stickyOuterWidth]
                 };
 
-                attribute.style(the[_placeholderEl], {
-                    width: the[_stickyOuterWidth],
-                    height: the[_stickyOuterHeight]
-                });
                 attribute.style(the[_stickyEl], pos);
             }
         }
@@ -237,3 +208,25 @@ pro[_initEvent] = function () {
 
 Sticky.defaults = defaults;
 module.exports = Sticky;
+
+/**
+ * 匹配是否为 root el
+ * @param el
+ * @returns {boolean}
+ */
+function matchesRootEl(el) {
+    return el === win || el === doc || el === htmlEl || el === bodyEl;
+}
+
+/**
+ * 计算容器的 scrollTop
+ * @param containerEl
+ * @returns {*}
+ */
+function getContainerScrollTop(containerEl) {
+    if(matchesRootEl(containerEl)) {
+        return 0;
+    }
+
+    return layout.scrollTop(containerEl);
+}

@@ -1,6 +1,6 @@
 {
   "name": "blear.ui.sticky",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "定点位置粘滞 UI",
   "scripts": {
     "live": "browser-sync start --config bs-config.js"
