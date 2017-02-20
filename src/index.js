@@ -72,8 +72,16 @@ var Sticky = UI.extend({
         }
     },
 
+    /**
+     * 手动更新位置
+     * @returns {Sticky}
+     */
     update: function () {
-        // 保留方法
+        var the = this;
+        the[_onScrollSticky]({
+            scrollTop: layout.scrollTop(the[_containerEl])
+        });
+        return the;
     },
 
     /**
@@ -222,7 +230,7 @@ function matchesRootEl(el) {
  * @returns {*}
  */
 function getContainerScrollTop(containerEl) {
-    if(matchesRootEl(containerEl)) {
+    if (matchesRootEl(containerEl)) {
         return 0;
     }
 
