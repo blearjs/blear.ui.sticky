@@ -79,7 +79,7 @@ var Sticky = UI.extend({
     update: function () {
         var the = this;
 
-        if (supportSticky) {
+        if (!supportSticky) {
             the[_onScrollSticky]({
                 scrollTop: layout.scrollTop(the[_containerEl])
             });
