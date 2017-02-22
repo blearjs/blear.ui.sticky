@@ -78,9 +78,13 @@ var Sticky = UI.extend({
      */
     update: function () {
         var the = this;
-        the[_onScrollSticky]({
-            scrollTop: layout.scrollTop(the[_containerEl])
-        });
+
+        if (supportSticky) {
+            the[_onScrollSticky]({
+                scrollTop: layout.scrollTop(the[_containerEl])
+            });
+        }
+
         return the;
     },
 
@@ -109,7 +113,6 @@ var _initNode = sole();
 var _initEvent = sole();
 var _restorePostion = sole();
 var _stickyOuterWidth = sole();
-var _stickyOuterHeight = sole();
 var _lastState = sole();
 var _scrollable = sole();
 var _onScrollSticky = sole();
