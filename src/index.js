@@ -186,7 +186,7 @@ pro[_initEvent] = function () {
         var scrollTop = meta.scrollTop;
         var state;
         var pos;
-        var min = layout.offsetTop(the[_placeholderEl]) + getContainerScrollTop(the[_containerEl]);
+        var min = layout.clientTop(the[_placeholderEl]) + getContainerScrollTop(the[_containerEl]);
         var max = min + layout.outerHeight(the[_parentEl]);
 
         if (scrollTop < min || scrollTop > max) {
